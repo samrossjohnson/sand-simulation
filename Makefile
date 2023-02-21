@@ -11,4 +11,20 @@ LINKER_FLAGS = submodules/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so
 
 # Target for executable compliation.
 all : main.cpp
+	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
+	-f v_simple.sc \
+	-o v_simple.bin \
+	-p spirv \
+	--platform linux \
+	--type vertex \
+	--verbose \
+	-i submodules/bgfx/src
+	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
+	-f f_simple.sc \
+	-o f_simple.bin \
+	-p spirv \
+	--platform linux \
+	--type fragment \
+	--verbose \
+	-i submodules/bgfx/src
 	$(CC) main.cpp -o main $(LINKER_FLAGS) $(BGFX_HEADERS)
