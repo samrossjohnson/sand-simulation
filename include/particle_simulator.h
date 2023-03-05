@@ -1,16 +1,16 @@
+#pragma once
+
 #include <memory>
 #include <unordered_map>
 
 #include "particle.h"
+#include "particle_registry.h"
 
 namespace sasi
 {
     class ParticleSimulator
     {
     public:
-        typedef void (*TickFunction)(ParticleSimulator* simulator, Particle& particle, int x, int y);
-        typedef Particle (*MakeFunction)(const ParticleSimulator* simulator);
-
         ParticleSimulator(int width, int height);
     
         // Move particle registration to a new class `ParticleRegistry`
@@ -57,10 +57,9 @@ namespace sasi
 
         uint64_t m_simulationStep;
 
+        std::unique_ptr<ParticleRegistry> m_particleRegistry;
         std::unique_ptr<Particle[]> m_particleData;
         std::unique_ptr<uint32_t[]> m_colorData;
-        std::unordered_map<ParticleType, TickFunction> m_tickFunctions;
-        std::unordered_map<ParticleType, MakeFunction> m_makeFunctions;
 
         Particle m_particleOutOfBounds;
         Particle m_particleVoid;

@@ -4,112 +4,20 @@
 #include <iostream>
 #include <chrono>
 
-// ================ SAND ================
-sasi::Particle sandMake(const sasi::ParticleSimulator* simulator)
-{
-    return sasi::Particle{ sasi::ParticleType::Sand, 0xFF00FFFF };
-}
-
-void sandTick(sasi::ParticleSimulator* simulator, sasi::Particle& particle, int x, int y)
-{
-    // If the cell below is free, move into it.
-    const sasi::Particle& below = simulator->getParticle(x, y + 1);
-    if (below.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x, y + 1, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-
-    // If the below type is a liquid we can move through, swap us.
-    if (below.type == sasi::ParticleType::Water)
-    {
-       simulator->swap(x, y, x, y + 1);
-    }
-
-    // If the cell below-left is free, move into it.
-    const sasi::Particle& belowLeft = simulator->getParticle(x - 1, y + 1);
-    if (belowLeft.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x - 1, y + 1, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-
-    // If the cell below-right is free, move into it.
-    const sasi::Particle& belowRight = simulator->getParticle(x + 1, y + 1);
-    if (belowRight.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x + 1, y + 1, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-}
-// ================ END OF SAND ================
-
-// ================ WATER ================
-sasi::Particle waterMake(const sasi::ParticleSimulator* simulator)
-{
-    return sasi::Particle{ sasi::ParticleType::Water, 0xFFFF0000 };
-}
-
-void waterTick(sasi::ParticleSimulator* simulator, sasi::Particle& particle, int x, int y)
-{
-    // If the cell below is free, move into it.
-    const sasi::Particle& below = simulator->getParticle(x, y + 1);
-    if (below.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x, y + 1, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-
-    // If the cell below-left is free, move into it.
-    const sasi::Particle& belowLeft = simulator->getParticle(x - 1, y + 1);
-    if (belowLeft.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x - 1, y + 1, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-
-    // If the cell below-right is free, move into it.
-    const sasi::Particle& belowRight = simulator->getParticle(x + 1, y + 1);
-    if (belowRight.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x + 1, y + 1, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-
-    // If the cell left is free spread.
-    const sasi::Particle& left = simulator->getParticle(x - 1, y);
-    if (left.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x - 1, y, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-
-    // If the cell right is free spread.
-    const sasi::Particle& right = simulator->getParticle(x + 1, y);
-    if (right.type == sasi::ParticleType::Void)
-    {
-        simulator->move(x, y, x + 1, y, simulator->make(sasi::ParticleType::Void));
-        return;
-    }
-}
-// ================ END OF WATER ================
+#include "particle_registry.h"
+#include "particle.h"
 
 sasi::ParticleSimulator::ParticleSimulator(int width, int height)
     : m_width(width)
     , m_height(height)
     , m_dataSize(width * height)
     , m_simulationStep(0ull)
+    , m_particleRegistry(new ParticleRegistry())
     , m_particleData(new Particle[m_dataSize])
     , m_colorData(new uint32_t[m_dataSize])
-    , m_tickFunctions({})
     , m_particleOutOfBounds({ ParticleType::OutOfBounds, 0x00000000 })
     , m_particleVoid({ ParticleType::Void, 0xFF000000 })
 {
-    m_tickFunctions.insert({ ParticleType::Sand, sandTick });
-    m_makeFunctions.insert({ ParticleType::Sand, sandMake });
-    m_tickFunctions.insert({ ParticleType::Water, waterTick });
-    m_makeFunctions.insert({ ParticleType::Water, waterMake });
-
     std::fill_n(m_particleData.get(), m_dataSize, Particle{});
     std::fill_n(m_colorData.get(), m_dataSize, 0xFF000000);
 
@@ -118,6 +26,12 @@ sasi::ParticleSimulator::ParticleSimulator(int width, int height)
 
 void sasi::ParticleSimulator::tick(double fixedDeltaTime)
 {
+    if (m_particleRegistry.get() == nullptr)
+    {
+        std::cout << "SASI (ERROR): missing particle registry on particle simulator.\n";
+        return;
+    }
+
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
     using std::chrono::duration;
@@ -137,9 +51,10 @@ void sasi::ParticleSimulator::tick(double fixedDeltaTime)
 
         particle.lastTickFrame = m_simulationStep;
 
-        if (auto it = m_tickFunctions.find(particle.type); it != m_tickFunctions.end())
+        TickFunction tickFunction = m_particleRegistry->getTickFunction(particle.type);
+        if (tickFunction != nullptr)
         {
-            it->second(this, particle, indexToX(i), indexToY(i));
+            tickFunction(this, particle, indexToX(i), indexToY(i));
         }
     }
 
@@ -258,9 +173,10 @@ void sasi::ParticleSimulator::move(int fromX, int fromY, int toX, int toY, const
 
 sasi::Particle sasi::ParticleSimulator::make(sasi::ParticleType type) const
 {
-    if (auto it = m_makeFunctions.find(type); it != m_makeFunctions.end())
+    MakeFunction makeFunction = m_particleRegistry->getMakeFunction(type);
+    if (makeFunction != nullptr)
     {
-        return it->second(this);
+        return makeFunction(this);
     }
 
     return m_particleVoid;

@@ -14,7 +14,7 @@ bin :
 	mkdir bin/shaders
 
 # Target for executable compliation.
-all : bin src/main.cpp src/world.cpp src/particle_simulator.cpp
+all : bin src/main.cpp src/world.cpp src/particle_simulator.cpp src/particle_registry.cpp
 	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
 	-f shaders/v_simple.sc \
 	-o bin/shaders/v_simple.bin \
@@ -31,4 +31,4 @@ all : bin src/main.cpp src/world.cpp src/particle_simulator.cpp
 	--type fragment \
 	--verbose \
 	-i submodules/bgfx/src
-	$(CC) src/main.cpp src/world.cpp src/particle_simulator.cpp -o bin/main $(LINKER_FLAGS) $(BGFX_HEADERS) $(SASI_HEADERS)
+	$(CC) src/main.cpp src/world.cpp src/particle_simulator.cpp src/particle_registry.cpp -o bin/main $(LINKER_FLAGS) $(BGFX_HEADERS) $(SASI_HEADERS)
