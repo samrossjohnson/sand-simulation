@@ -12,7 +12,7 @@ LINKER_FLAGS = submodules/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so
 # Target for executable compliation.
 all : main.cpp world.cpp particle_simulator.cpp
 	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
-	-f v_simple.sc \
+	-f shaders/v_simple.sc \
 	-o v_simple.bin \
 	-p spirv \
 	--platform linux \
@@ -20,7 +20,7 @@ all : main.cpp world.cpp particle_simulator.cpp
 	--verbose \
 	-i submodules/bgfx/src
 	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
-	-f f_simple.sc \
+	-f shaders/f_simple.sc \
 	-o f_simple.bin \
 	-p spirv \
 	--platform linux \
