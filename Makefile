@@ -10,7 +10,7 @@ BGFX_HEADERS =  -Isubmodules/bgfx/include -Isubmodules/bx/include -Isubmodules/b
 LINKER_FLAGS = submodules/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
 
 # Target for executable compliation.
-all : main.cpp
+all : main.cpp world.cpp particle_simulator.cpp
 	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
 	-f v_simple.sc \
 	-o v_simple.bin \
@@ -27,4 +27,4 @@ all : main.cpp
 	--type fragment \
 	--verbose \
 	-i submodules/bgfx/src
-	$(CC) main.cpp -o main $(LINKER_FLAGS) $(BGFX_HEADERS)
+	$(CC) main.cpp world.cpp particle_simulator.cpp -o main $(LINKER_FLAGS) $(BGFX_HEADERS)
