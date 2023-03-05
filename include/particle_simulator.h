@@ -12,6 +12,9 @@ namespace sasi
         typedef Particle (*MakeFunction)(const ParticleSimulator* simulator);
 
         ParticleSimulator(int width, int height);
+    
+        // Move particle registration to a new class `ParticleRegistry`
+        // This is forward declared which stops any circular include
 
         void tick(double fixedDeltaTime);
 

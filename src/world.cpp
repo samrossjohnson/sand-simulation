@@ -32,12 +32,12 @@ sasi::World::World(int width, int height, uint64_t startTimeMs)
     );
 
     bgfx::ShaderHandle vsh{};
-    if (!loadShader(vsh, "v_simple.bin"))
+    if (!loadShader(vsh, "bin/shaders/v_simple.bin"))
     {
         std::cout << "SASI: World initialization failure. Failed to load vertex shader.\n";
     }
     bgfx::ShaderHandle fsh{};
-    if (!loadShader(fsh, "f_simple.bin"))
+    if (!loadShader(fsh, "bin/shaders/f_simple.bin"))
     {
         std::cout << "SASI: World initialization failure. Failed to load fragment shader.\n";
     }
