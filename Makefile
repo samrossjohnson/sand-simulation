@@ -1,9 +1,6 @@
 # Specify the compiler we want to use.
 CC = g++
 
-# Additional compilation options.
-# COMPILER_FLAGS =
-
 BGFX_HEADERS =  -Isubmodules/bgfx/include -Isubmodules/bx/include -Isubmodules/bimg/include
 
 SASI_HEADERS = -Iinclude
