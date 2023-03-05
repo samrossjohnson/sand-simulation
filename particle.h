@@ -19,19 +19,19 @@ namespace sasi
         Particle()
             : type(ParticleType::Void)
             , color(0x000000)
-            , lastTickFrame(-1)
+            , lastTickFrame(0ull)
         {
         }
 
         Particle(ParticleType _type, uint32_t _color)
             : type(_type)
             , color(_color)
-            , lastTickFrame(-1)
+            , lastTickFrame(0ull)
         {
         }
 
         ParticleType type;
         uint32_t color;
-        int lastTickFrame;
+        uint64_t lastTickFrame;
     };
 }

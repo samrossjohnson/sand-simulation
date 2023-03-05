@@ -98,6 +98,7 @@ sasi::ParticleSimulator::ParticleSimulator(int width, int height)
     : m_width(width)
     , m_height(height)
     , m_dataSize(width * height)
+    , m_simulationStep(0ull)
     , m_particleData(new Particle[m_dataSize])
     , m_colorData(new uint32_t[m_dataSize])
     , m_tickFunctions({})
@@ -111,9 +112,11 @@ sasi::ParticleSimulator::ParticleSimulator(int width, int height)
 
     std::fill_n(m_particleData.get(), m_dataSize, Particle{});
     std::fill_n(m_colorData.get(), m_dataSize, 0xFF000000);
+
+    m_particleData[m_width / 2] = make(ParticleType::Sand);
 }
 
-void sasi::ParticleSimulator::tick(int frame)
+void sasi::ParticleSimulator::tick(double fixedDeltaTime)
 {
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -121,16 +124,18 @@ void sasi::ParticleSimulator::tick(int frame)
     using std::chrono::milliseconds;
     auto t1 = high_resolution_clock::now();
 
+    m_particleData[m_width / 2] = make(ParticleType::Sand);
+
     // Invoke the tick function for each particle.
     for (int i = 0; i < m_dataSize; ++i)
     {
         Particle& particle = m_particleData[i];
-        if (particle.lastTickFrame >= frame)
+        if (particle.lastTickFrame >= m_simulationStep)
         {
             continue;
         }
 
-        particle.lastTickFrame = frame;
+        particle.lastTickFrame = m_simulationStep;
 
         if (auto it = m_tickFunctions.find(particle.type); it != m_tickFunctions.end())
         {
@@ -146,7 +151,9 @@ void sasi::ParticleSimulator::tick(int frame)
 
     auto t2 = high_resolution_clock::now();
     auto ms_int = duration_cast<milliseconds>(t2 - t1);
-    std::cout << "SASI: Particle simulation complete in " << ms_int.count() << "ms\n";
+    std::cout << "SASI: Fixed delta time is " << fixedDeltaTime << ". Particle simulation complete in " << ms_int.count() << "ms\n";
+
+    ++m_simulationStep;
 }
 
 size_t sasi::ParticleSimulator::getColorDataSize() const

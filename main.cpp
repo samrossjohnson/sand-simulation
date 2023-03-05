@@ -79,13 +79,14 @@ int main(int argc, char* argv[])
         bgfx::setDebug(BGFX_DEBUG_TEXT);
 
         // Create the world.
-        sasi::World w { 64, 64 };
+        sasi::World w { 64, 64, SDL_GetTicks64() };
 
         bool shouldQuit = false;
         SDL_Event event;
         while (!shouldQuit)
         {
             ++frame;
+            const Uint64 elapsedTimeMs = SDL_GetTicks64();
 
             while (SDL_PollEvent(&event) != 0)
             {
@@ -120,7 +121,8 @@ int main(int argc, char* argv[])
                 }
             }
 
-            w.tick(frame);
+
+            w.tick(frame, elapsedTimeMs);
 
             // Set up view and projection matrices.
             const bx::Vec3 at  = { 0.0f, 0.0f, 0.0f };

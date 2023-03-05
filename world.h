@@ -50,26 +50,15 @@ namespace sasi
         bgfx::TextureHandle m_textureHandle;
         bgfx::UniformHandle m_textureSampler;
 
+        uint64_t m_startTimeMs;
+        double m_previousTickTimeSecs;
+        double m_fixedTimeAccumulationSecs;
+
     public:
-        World(int width, int height);
+        World(int width, int height, uint64_t startTimeMs);
         ~World();
 
-        void tick(int frame);
+        void tick(int frame, uint64_t elapsedTimeMs);
         void render(int frame, bgfx::ViewId viewId);
-
-        //int getWidth() const;
-        //int getHeight() const;
-        //const Particle* getData() const;
-        //size_t getDataSize() const;
-
-    private:
-        //int indexToX(int index) const;
-        //int indexToY(int index) const;
-        //int xyToIndex(int x, int y) const;
-
-        //void setParticle(int index, Particle particle);
-        //void setParticle(int x, int y, Particle particle);
-        //Particle getParticle(int index) const;
-        //Particle getParticle(int x, int y) const;
     };
 }

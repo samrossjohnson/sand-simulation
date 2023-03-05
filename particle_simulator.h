@@ -13,7 +13,7 @@ namespace sasi
 
         ParticleSimulator(int width, int height);
 
-        void tick(int frame);
+        void tick(double fixedDeltaTime);
 
         size_t getColorDataSize() const;
         int getColorDataWidth() const;
@@ -51,6 +51,8 @@ namespace sasi
         int m_width;
         int m_height;
         int m_dataSize;
+
+        uint64_t m_simulationStep;
 
         std::unique_ptr<Particle[]> m_particleData;
         std::unique_ptr<uint32_t[]> m_colorData;

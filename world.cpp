@@ -13,8 +13,14 @@
 
 bgfx::VertexLayout sasi::PosUvVertex::ms_layout;
 
-sasi::World::World(int width, int height)
+static const int k_targetFps = 30;
+static const double k_targetFrameTime = 1.0 / k_targetFps;
+
+sasi::World::World(int width, int height, uint64_t startTimeMs)
     : m_simulator({width, height})
+    , m_startTimeMs(startTimeMs)
+    , m_previousTickTimeSecs(0.0)
+    , m_fixedTimeAccumulationSecs(0.0)
 {
     PosUvVertex::init();
     m_vbh = bgfx::createVertexBuffer(
@@ -63,9 +69,20 @@ sasi::World::~World()
     bgfx::destroy(m_vbh);
 }
 
-void sasi::World::tick(int frame)
+void sasi::World::tick(int frame, uint64_t elapsedTimeMs)
 {
-    m_simulator.tick(frame);
+    double elapsedTimeSecs = elapsedTimeMs / 1000.0;
+    double deltaTimeSecs = elapsedTimeSecs - m_previousTickTimeSecs;
+
+    m_previousTickTimeSecs = elapsedTimeSecs;
+    m_fixedTimeAccumulationSecs += deltaTimeSecs;
+
+    while (m_fixedTimeAccumulationSecs >= k_targetFrameTime)
+    {
+        m_simulator.tick(k_targetFrameTime);
+
+        m_fixedTimeAccumulationSecs -= k_targetFrameTime;
+    }
 }
 
 void sasi::World::render(int frame, bgfx::ViewId viewId)
