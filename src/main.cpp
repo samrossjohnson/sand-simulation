@@ -12,8 +12,9 @@
 #include "world.h"
 
 SDL_Window* g_window = nullptr;
-const int g_initWidth = 640;
-const int g_initHeight = 480;
+const int g_pixelsPerUnit = 8;
+const int g_initWidth = g_pixelsPerUnit * 16 * 2;
+const int g_initHeight = g_pixelsPerUnit * 10 * 2;
 const uint32_t g_clearColor = 0x000000ff;
 
 int main(int argc, char* argv[])
@@ -79,7 +80,7 @@ int main(int argc, char* argv[])
         bgfx::setDebug(BGFX_DEBUG_TEXT);
 
         // Create the world.
-        sasi::World w { 64, 64, SDL_GetTicks64() };
+        sasi::World w { g_initWidth, g_initHeight, SDL_GetTicks64() };
 
         bool shouldQuit = false;
         SDL_Event event;
@@ -121,24 +122,12 @@ int main(int argc, char* argv[])
                 }
             }
 
-
             w.tick(frame, elapsedTimeMs);
 
-            // Set up view and projection matrices.
-            const bx::Vec3 at  = { 0.0f, 0.0f, 0.0f };
-            const bx::Vec3 eye = { 0.0f, 0.0f, -10.0f };
-            float view[16];
-            bx::mtxLookAt(view, eye, at);
-            float proj[16];
-            bx::mtxProj(
-                proj,
-                60.0f,
-                width / static_cast<float>(height),
-                0.1f, 100.0f,
-                bgfx::getCaps()->homogeneousDepth);
-            bgfx::setViewTransform(clearView, view, proj);
-
             bgfx::touch(clearView);
+
+            w.updateBackbufferWidthHeight(width, height);
+            w.render(frame, clearView);
 
             // Write resolution stats to debug text.
             bgfx::dbgTextClear();
@@ -150,20 +139,6 @@ int main(int argc, char* argv[])
                 "Backbuffer %dW x %dH in pixels.",
                 stats->width,
                 stats->height);
-
-            // Set model matrix.
-            float mtx[16];
-            bx::mtxIdentity(mtx);
-            bx::mtxScale(mtx, 10.0f, 10.0f, 1.0f);
-            mtx[12] = 0.0f; // x
-            mtx[13] = 0.0f; // y
-            mtx[14] = 0.0f; // z
-            bgfx::setTransform(mtx);
-
-            // Set render states.
-            bgfx::setState(BGFX_STATE_DEFAULT);
-
-            w.render(frame, clearView);
 
             bgfx::frame();
         }

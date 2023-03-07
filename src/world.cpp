@@ -7,17 +7,23 @@
 #include <thread>
 #include <fstream>
 
-#include <bgfx/bgfx.h>
+#define BX_CONFIG_DEBUG 0
 
+#include <bgfx/bgfx.h>
+#include <bx/math.h>
+
+#include "camera.h"
 #include "shader_util.h"
 
 bgfx::VertexLayout sasi::PosUvVertex::ms_layout;
 
 static const int k_targetFps = 30;
 static const double k_targetFrameTime = 1.0 / k_targetFps;
+static const int k_pixelsPerUnit = 8;
 
 sasi::World::World(int width, int height, uint64_t startTimeMs)
     : m_simulator({width, height})
+    , m_camera(new Camera(k_pixelsPerUnit, 0.0f, 100.0f))
     , m_startTimeMs(startTimeMs)
     , m_previousTickTimeSecs(0.0)
     , m_fixedTimeAccumulationSecs(0.0)
@@ -87,6 +93,26 @@ void sasi::World::tick(int frame, uint64_t elapsedTimeMs)
 
 void sasi::World::render(int frame, bgfx::ViewId viewId)
 {
+    if (m_camera.get() == nullptr)
+    {
+        std::cout << "SASI (ERROR): World:: failed to render as camera is null.\n";
+        return;
+    }
+
+    float view[16];
+    m_camera->getView(view);
+    float proj[16];
+    m_camera->getproj(proj, m_backbufferWidth, m_backbufferHeight);
+    bgfx::setViewTransform(viewId, view, proj);
+
+    // Set render states.
+    bgfx::setState(BGFX_STATE_DEFAULT);
+
+    // Set model matrix.
+    float mtx[16];
+    bx::mtxScale(mtx, 16.0f * 2.0f, 10.0f * 2.0f, 1.0f);
+    bgfx::setTransform(mtx);
+
     bgfx::setVertexBuffer(0, m_vbh);
     bgfx::setIndexBuffer(m_ibh);
 
@@ -105,4 +131,10 @@ void sasi::World::render(int frame, bgfx::ViewId viewId)
 
     // Submit primitive for rendering.
     bgfx::submit(viewId, m_ph);
+}
+
+void sasi::World::updateBackbufferWidthHeight(int width, int height)
+{
+    m_backbufferWidth = width;
+    m_backbufferHeight = height;
 }

@@ -6,6 +6,8 @@
 
 namespace sasi
 {
+    class Camera;
+
     struct PosUvVertex
     {
         float x;
@@ -50,9 +52,14 @@ namespace sasi
         bgfx::TextureHandle m_textureHandle;
         bgfx::UniformHandle m_textureSampler;
 
+        std::unique_ptr<Camera> m_camera;
+
         uint64_t m_startTimeMs;
         double m_previousTickTimeSecs;
         double m_fixedTimeAccumulationSecs;
+
+        int m_backbufferWidth;
+        int m_backbufferHeight;
 
     public:
         World(int width, int height, uint64_t startTimeMs);
@@ -60,5 +67,7 @@ namespace sasi
 
         void tick(int frame, uint64_t elapsedTimeMs);
         void render(int frame, bgfx::ViewId viewId);
+
+        void updateBackbufferWidthHeight(int width, int height);
     };
 }

@@ -8,13 +8,16 @@ SASI_HEADERS = -Iinclude
 # Specify libraries to link against.
 LINKER_FLAGS = submodules/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so -lSDL2 -lGL -lX11 -ldl -lpthread -lrt
 
+
+SOURCES := $(wildcard src/*.cpp)
+
 # Make bin structure.
 bin :
 	mkdir bin
 	mkdir bin/shaders
 
 # Target for executable compliation.
-all : bin src/main.cpp src/world.cpp src/particle_simulator.cpp src/particle_registry.cpp
+all : bin $(SOURCES)
 	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
 	-f shaders/v_simple.sc \
 	-o bin/shaders/v_simple.bin \
@@ -31,4 +34,4 @@ all : bin src/main.cpp src/world.cpp src/particle_simulator.cpp src/particle_reg
 	--type fragment \
 	--verbose \
 	-i submodules/bgfx/src
-	$(CC) src/main.cpp src/world.cpp src/particle_simulator.cpp src/particle_registry.cpp -o bin/main $(LINKER_FLAGS) $(BGFX_HEADERS) $(SASI_HEADERS)
+	$(CC) $(SOURCES) -o bin/main $(LINKER_FLAGS) $(BGFX_HEADERS) $(SASI_HEADERS)
