@@ -10,6 +10,7 @@ LINKER_FLAGS = submodules/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libDebug.so
 
 
 SOURCES := $(wildcard src/*.cpp)
+ENGINE_SOURCES := $(wildcard src/engine/*.cpp)
 
 # Make bin structure.
 bin :
@@ -17,7 +18,7 @@ bin :
 	mkdir bin/shaders
 
 # Target for executable compliation.
-all : bin $(SOURCES)
+all : bin $(SOURCES) $(ENGINE_SOURCES)
 	./submodules/bgfx/.build/linux64_gcc/bin/shadercDebug \
 	-f shaders/v_simple.sc \
 	-o bin/shaders/v_simple.bin \
@@ -34,4 +35,4 @@ all : bin $(SOURCES)
 	--type fragment \
 	--verbose \
 	-i submodules/bgfx/src
-	$(CC) $(SOURCES) -o bin/main $(LINKER_FLAGS) $(BGFX_HEADERS) $(SASI_HEADERS)
+	$(CC) $(SOURCES) $(ENGINE_SOURCES) -o bin/main $(LINKER_FLAGS) $(BGFX_HEADERS) $(SASI_HEADERS)
