@@ -14,16 +14,18 @@
 
 #include "camera.h"
 #include "shader_util.h"
+#include "engine/input_state.h"
 
 bgfx::VertexLayout sasi::PosUvVertex::ms_layout;
 
-static const int k_targetFps = 30;
+static const int k_targetFps = 60;
 static const double k_targetFrameTime = 1.0 / k_targetFps;
 static const int k_pixelsPerUnit = 8;
 
-sasi::World::World(int width, int height, uint64_t startTimeMs)
+sasi::World::World(int width, int height, uint64_t startTimeMs, const InputState* inputState)
     : m_simulator({width, height})
     , m_camera(new Camera(k_pixelsPerUnit, 0.0f, 100.0f))
+    , m_inputState(inputState)
     , m_startTimeMs(startTimeMs)
     , m_previousTickTimeSecs(0.0)
     , m_fixedTimeAccumulationSecs(0.0)
@@ -77,12 +79,19 @@ sasi::World::~World()
 
 void sasi::World::tick(int frame, uint64_t elapsedTimeMs)
 {
+    if (m_inputState == nullptr)
+    {
+        std::cout << "SASI (ERROR): world is missing input state.\n";
+        return;
+    }
+
     double elapsedTimeSecs = elapsedTimeMs / 1000.0;
     double deltaTimeSecs = elapsedTimeSecs - m_previousTickTimeSecs;
 
     m_previousTickTimeSecs = elapsedTimeSecs;
     m_fixedTimeAccumulationSecs += deltaTimeSecs;
 
+    // Run fixed update simulation.
     while (m_fixedTimeAccumulationSecs >= k_targetFrameTime)
     {
         m_simulator.tick(k_targetFrameTime);

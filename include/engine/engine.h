@@ -7,6 +7,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 
+#include "engine/input_state.h"
+
 namespace sasi
 {
     class World;
@@ -45,5 +47,7 @@ namespace sasi
 
         std::unique_ptr<SDL_Window, SDLWindowDeleter> m_window;
         std::unique_ptr<World> m_world;
+
+        InputState m_inputState;
     };
 }

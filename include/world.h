@@ -7,6 +7,7 @@
 namespace sasi
 {
     class Camera;
+    class InputState;
 
     struct PosUvVertex
     {
@@ -54,6 +55,8 @@ namespace sasi
 
         std::unique_ptr<Camera> m_camera;
 
+        const InputState* m_inputState;
+
         uint64_t m_startTimeMs;
         double m_previousTickTimeSecs;
         double m_fixedTimeAccumulationSecs;
@@ -62,7 +65,7 @@ namespace sasi
         int m_backbufferHeight;
 
     public:
-        World(int width, int height, uint64_t startTimeMs);
+        World(int width, int height, uint64_t startTimeM, const InputState* inputState);
         ~World();
 
         void tick(int frame, uint64_t elapsedTimeMs);

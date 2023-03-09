@@ -9,6 +9,7 @@ sasi::Engine::Engine(int initWidth, int initHeight)
     , m_isInitialized(false)
     , m_isQuitting(false)
     , m_clearView(0)
+    , m_inputState({})
 {
     // Initialize SDL video subsystem.
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -65,7 +66,7 @@ sasi::Engine::Engine(int initWidth, int initHeight)
     // Enable debug text.
     bgfx::setDebug(BGFX_DEBUG_TEXT);
 
-    m_world.reset(new World{ 160, 160, SDL_GetTicks64() });
+    m_world.reset(new World{ 160, 160, SDL_GetTicks64(), &m_inputState });
 }
 
 sasi::Engine::~Engine()
@@ -80,7 +81,10 @@ bool sasi::Engine::tick()
 {
     while (!m_isQuitting)
     {
+        m_inputState.refreshKeyStates();
+
         pollEvents();
+
         bgfx::touch(m_clearView);
 
         if (m_world.get() != nullptr)
@@ -150,9 +154,11 @@ void sasi::Engine::pollEvents()
         }
         else if (event.type == SDL_KEYDOWN)
         {
+            m_inputState.setKeyDown(event.key.keysym.sym);
         }
         else if (event.type == SDL_KEYUP)
         {
+            m_inputState.setKeyUp(event.key.keysym.sym);
         }
     }
 }
