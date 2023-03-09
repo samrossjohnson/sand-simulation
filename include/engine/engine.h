@@ -19,7 +19,7 @@ namespace sasi
             SDL_Quit();
         }
     };
-    
+
     class Engine
     {
     public:
@@ -29,7 +29,7 @@ namespace sasi
         bool tick();
 
         bool isInitialized() const;
-    
+
     private:
         void pollEvents();
 
