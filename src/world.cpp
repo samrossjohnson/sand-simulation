@@ -85,11 +85,43 @@ void sasi::World::tick(int frame, uint64_t elapsedTimeMs)
         return;
     }
 
+    if (m_camera.get() == nullptr)
+    {
+        std::cout << "SASI (ERROR): world is missing camera.\n";
+        return;
+    }
+
     double elapsedTimeSecs = elapsedTimeMs / 1000.0;
     double deltaTimeSecs = elapsedTimeSecs - m_previousTickTimeSecs;
 
     m_previousTickTimeSecs = elapsedTimeSecs;
     m_fixedTimeAccumulationSecs += deltaTimeSecs;
+
+    const float cameraSpeed = 5.0f;
+    if (m_inputState->isKeyDownThisFrame(SDLK_i))
+    {
+        m_camera->zoomIn();
+    }
+    else if (m_inputState->isKeyDownThisFrame(SDLK_o))
+    {
+        m_camera->zoomOut();
+    }
+    else if (m_inputState->isKeyDown(SDLK_d))
+    {
+        m_camera->translate(bx::mul(bx::Vec3{ 1.0f, 0.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
+    }
+    else if (m_inputState->isKeyDown(SDLK_a))
+    {
+        m_camera->translate(bx::mul(bx::Vec3{ -1.0f, 0.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
+    }
+    else if (m_inputState->isKeyDown(SDLK_w))
+    {
+        m_camera->translate(bx::mul(bx::Vec3{ 0.0f, 1.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
+    }
+    else if (m_inputState->isKeyDown(SDLK_s))
+    {
+        m_camera->translate(bx::mul(bx::Vec3{ 0.0f, -1.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
+    }
 
     // Run fixed update simulation.
     while (m_fixedTimeAccumulationSecs >= k_targetFrameTime)

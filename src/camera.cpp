@@ -10,15 +10,15 @@ sasi::Camera::Camera(float pixelsPerUnit, float nearPlane, float farPlane)
     , m_zoom(1.0f)
     , m_nearPlane(nearPlane)
     , m_farPlane(farPlane)
+    , m_location({ 0.0f, 0.0f, -1.0f })
 {
 }
 
 void sasi::Camera::getView(float* result) const
 {
-    const bx::Vec3 eye{ 0.0f, 0.0f, -1.0f };
-    const bx::Vec3 at{ 0.0f, 0.0f, 0.0f };
+    const bx::Vec3 at{ m_location.x, m_location.y, 0.0f };
     const bx::Vec3 up{ 0.0f, 1.0f, 0.0f };
-    bx::mtxLookAt(result, eye, at, up);
+    bx::mtxLookAt(result, m_location, at, up);
 }
 
 void sasi::Camera::getproj(float* result, int width, int height) const
@@ -44,4 +44,19 @@ void sasi::Camera::getproj(float* result, int width, int height) const
         m_farPlane,
         0.0f,
         bgfx::getCaps()->homogeneousDepth);
+}
+
+void sasi::Camera::zoomIn()
+{
+    m_zoom += 1.0f;
+}
+
+void sasi::Camera::zoomOut()
+{
+    m_zoom = bx::max(1.0f, m_zoom - 1.0f);
+}
+
+void sasi::Camera::translate(const bx::Vec3& translation)
+{
+    m_location = bx::add(m_location, translation);
 }
