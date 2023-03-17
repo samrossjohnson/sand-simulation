@@ -81,9 +81,14 @@ bool sasi::Engine::tick()
 {
     while (!m_isQuitting)
     {
-        m_inputState.refreshKeyStates();
+        m_inputState.refreshInputStates();
 
         pollEvents();
+
+        int mouseX;
+        int mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        m_inputState.setMouseLocation(mouseX, mouseY);
 
         bgfx::touch(m_clearView);
 
@@ -159,6 +164,14 @@ void sasi::Engine::pollEvents()
         else if (event.type == SDL_KEYUP)
         {
             m_inputState.setKeyUp(event.key.keysym.sym);
+        }
+        else if (event.type == SDL_MOUSEBUTTONDOWN)
+        {
+            m_inputState.setMouseButtonDown(event.button.button);
+        }
+        else if (event.type == SDL_MOUSEBUTTONUP)
+        {
+            m_inputState.setMouseButtonUp(event.button.button);
         }
     }
 }

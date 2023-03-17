@@ -1,15 +1,13 @@
 #pragma once
 
-#define BX_CONFIG_DEBUG 0
-
-#include <bx/math.h>
+#include "sasi.h"
 
 namespace sasi
 {
     class Camera
     {
     public:
-        Camera(float pixelsPerUnit, float nearPlane, float farPlane);
+        Camera(float nearPlane, float farPlane);
 
         void getView(float* result) const;
         void getproj(float* result, int targetWidth, int targetHeight) const;
@@ -18,9 +16,11 @@ namespace sasi
         void zoomOut();
         void translate(const bx::Vec3& translation);
 
-    private:
-        const float k_pixelsPerUnit;
+        /* Converts a screen (pixel) coordinate into a world space location based on the
+           properties of this camera. */
+        bx::Vec3 screenToWorldLocation(int width, int height, int x, int y) const;
 
+    private:
         bx::Vec3 m_location;
         float m_zoom;
         float m_nearPlane;

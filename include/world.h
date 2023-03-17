@@ -31,10 +31,10 @@ namespace sasi
 
     static const PosUvVertex s_triVertices[] =
     {
-        { -0.5f, -0.5f, 0.0f, 0.0f, 1.0f },
-        { 0.5f, -0.5f, 0.0f, 1.0f, 1.0f },
-        { -0.5f, 0.5f, 0.0f, 0.0f, 0.0f },
-        { 0.5f, 0.5f, 0.0f, 1.0f, 0.0f }
+        { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
+        { 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+        { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f },
+        { 1.0f, 1.0f, 0.0f, 1.0f, 0.0f }
     };
 
     static const uint16_t s_triIndices[] =

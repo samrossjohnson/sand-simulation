@@ -7,6 +7,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 
+// SDL_syswm.h includes Xlib.h includes X.h defines None clases with None in bx/math. This
+// seems to be fine to undef.
+#undef None
+
 #include "engine/input_state.h"
 
 namespace sasi

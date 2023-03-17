@@ -7,10 +7,9 @@
 #include <thread>
 #include <fstream>
 
-#define BX_CONFIG_DEBUG 0
-
 #include <bgfx/bgfx.h>
-#include <bx/math.h>
+
+#include "sasi.h"
 
 #include "camera.h"
 #include "shader_util.h"
@@ -18,13 +17,12 @@
 
 bgfx::VertexLayout sasi::PosUvVertex::ms_layout;
 
-static const int k_targetFps = 60;
+static const int k_targetFps = 30;
 static const double k_targetFrameTime = 1.0 / k_targetFps;
-static const int k_pixelsPerUnit = 8;
 
 sasi::World::World(int width, int height, uint64_t startTimeMs, const InputState* inputState)
-    : m_simulator({width, height})
-    , m_camera(new Camera(k_pixelsPerUnit, 0.0f, 100.0f))
+    : m_simulator({ 160, 160 })
+    , m_camera(new Camera{ 0.0f, 100.0f })
     , m_inputState(inputState)
     , m_startTimeMs(startTimeMs)
     , m_previousTickTimeSecs(0.0)
@@ -102,25 +100,33 @@ void sasi::World::tick(int frame, uint64_t elapsedTimeMs)
     {
         m_camera->zoomIn();
     }
-    else if (m_inputState->isKeyDownThisFrame(SDLK_o))
+    if (m_inputState->isKeyDownThisFrame(SDLK_o))
     {
         m_camera->zoomOut();
     }
-    else if (m_inputState->isKeyDown(SDLK_d))
+    if (m_inputState->isKeyDown(SDLK_d))
     {
         m_camera->translate(bx::mul(bx::Vec3{ 1.0f, 0.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
     }
-    else if (m_inputState->isKeyDown(SDLK_a))
+    if (m_inputState->isKeyDown(SDLK_a))
     {
         m_camera->translate(bx::mul(bx::Vec3{ -1.0f, 0.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
     }
-    else if (m_inputState->isKeyDown(SDLK_w))
+    if (m_inputState->isKeyDown(SDLK_w))
     {
         m_camera->translate(bx::mul(bx::Vec3{ 0.0f, 1.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
     }
-    else if (m_inputState->isKeyDown(SDLK_s))
+    if (m_inputState->isKeyDown(SDLK_s))
     {
         m_camera->translate(bx::mul(bx::Vec3{ 0.0f, -1.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
+    }
+
+    if (m_inputState->isMouseButtonDown(1))
+    {
+        int x, y;
+        m_inputState->getMouseLocation(x, y);
+        const bx::Vec3 mouseWorldLocation = m_camera->screenToWorldLocation(m_backbufferWidth, m_backbufferHeight, x, y);
+        m_simulator.makeParticleAtWorldLocation(ParticleType::Sand, mouseWorldLocation);
     }
 
     // Run fixed update simulation.
@@ -150,9 +156,13 @@ void sasi::World::render(int frame, bgfx::ViewId viewId)
     bgfx::setState(BGFX_STATE_DEFAULT);
 
     // Set model matrix.
-    float mtx[16];
-    bx::mtxScale(mtx, 16.0f * 2.0f, 10.0f * 2.0f, 1.0f);
-    bgfx::setTransform(mtx);
+    float mtxScale[16];
+    bx::mtxScale(mtxScale, 20.0f, 20.0f, 1.0f);
+    float mtxTranslate[16];
+    bx::mtxTranslate(mtxTranslate, 0.0f, -1.0f, 0.0f);
+    float mtxTransform[16];
+    bx::mtxMul(mtxTransform, mtxTranslate, mtxScale);
+    bgfx::setTransform(mtxTransform);
 
     bgfx::setVertexBuffer(0, m_vbh);
     bgfx::setIndexBuffer(m_ibh);

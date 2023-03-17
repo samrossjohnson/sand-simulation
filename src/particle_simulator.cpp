@@ -1,5 +1,7 @@
 #include "particle_simulator.h"
 
+#include "sasi.h"
+
 #include <algorithm>
 #include <iostream>
 #include <chrono>
@@ -16,12 +18,10 @@ sasi::ParticleSimulator::ParticleSimulator(int width, int height)
     , m_particleData(new Particle[m_dataSize])
     , m_colorData(new uint32_t[m_dataSize])
     , m_particleOutOfBounds({ ParticleType::OutOfBounds, 0x00000000 })
-    , m_particleVoid({ ParticleType::Void, 0xFF000000 })
+    , m_particleVoid({ ParticleType::Void, 0xFF0F0F0F })
 {
-    std::fill_n(m_particleData.get(), m_dataSize, Particle{});
+    std::fill_n(m_particleData.get(), m_dataSize, m_particleVoid);
     std::fill_n(m_colorData.get(), m_dataSize, 0xFF000000);
-
-    m_particleData[m_width / 2] = make(ParticleType::Sand);
 }
 
 void sasi::ParticleSimulator::tick(double fixedDeltaTime)
@@ -37,8 +37,6 @@ void sasi::ParticleSimulator::tick(double fixedDeltaTime)
     using std::chrono::duration;
     using std::chrono::milliseconds;
     auto t1 = high_resolution_clock::now();
-
-    m_particleData[m_width / 2] = make(ParticleType::Sand);
 
     // Invoke the tick function for each particle.
     for (int i = 0; i < m_dataSize; ++i)
@@ -66,7 +64,8 @@ void sasi::ParticleSimulator::tick(double fixedDeltaTime)
 
     auto t2 = high_resolution_clock::now();
     auto ms_int = duration_cast<milliseconds>(t2 - t1);
-    std::cout << "SASI: Fixed delta time is " << fixedDeltaTime << ". Particle simulation complete in " << ms_int.count() << "ms\n";
+
+    //std::cout << "SASI: Fixed delta time is " << fixedDeltaTime << ". Particle simulation complete in " << ms_int.count() << "ms\n";
 
     ++m_simulationStep;
 }
@@ -155,6 +154,23 @@ const sasi::Particle& sasi::ParticleSimulator::getParticle(int x, int y) const
     }
 
     return getParticle(coordToIndex(x, y));
+}
+
+void sasi::ParticleSimulator::makeParticleAtWorldLocation(ParticleType type, const bx::Vec3& worldLocation)
+{
+    // ASSUMPTION: this object is always at the world origin with the 0,0 particle being top left.
+
+    // Scale the world location using the pixels-per-unit value, trunc-ing any remainder.
+    int particleX = static_cast<int>(worldLocation.x * sasi::k_pixelsPerUnit);
+    int particleY = static_cast<int>(worldLocation.y * sasi::k_pixelsPerUnit);
+
+    if (!isValidCoord(particleX, particleY))
+    {
+        std::cout << "SASI (WARNING): makeParticleAtWorldLocation called with out-of-bounds location\n";
+        return;
+    }
+
+    setParticle(coordToIndex(particleX, particleY), make(type));
 }
 
 void sasi::ParticleSimulator::move(int fromX, int fromY, int toX, int toY, const Particle& replace)

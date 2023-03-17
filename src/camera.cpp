@@ -1,13 +1,9 @@
 #include "camera.h"
 
-#define BX_CONFIG_DEBUG 0
-
 #include <bgfx/bgfx.h>
-#include <bx/math.h>
 
-sasi::Camera::Camera(float pixelsPerUnit, float nearPlane, float farPlane)
-    : k_pixelsPerUnit(pixelsPerUnit)
-    , m_zoom(1.0f)
+sasi::Camera::Camera(float nearPlane, float farPlane)
+    : m_zoom(1.0f)
     , m_nearPlane(nearPlane)
     , m_farPlane(farPlane)
     , m_location({ 0.0f, 0.0f, -1.0f })
@@ -59,4 +55,24 @@ void sasi::Camera::zoomOut()
 void sasi::Camera::translate(const bx::Vec3& translation)
 {
     m_location = bx::add(m_location, translation);
+}
+
+bx::Vec3 sasi::Camera::screenToWorldLocation(int width, int height, int x, int y) const
+{
+    float zoomScalePixPerUnit = sasi::k_pixelsPerUnit * m_zoom;
+
+    // The top-left of the screen is pixel (0, 0). First get that as a
+    // world space location.
+    const float halfWidth = width / 2.0f;
+    const float halfHeight = height / 2.0f;
+    const bx::Vec3 screenTopLeftWorldLocation{
+        m_location.x - (halfWidth / zoomScalePixPerUnit),
+        -m_location.y - (halfHeight / zoomScalePixPerUnit),
+        0.0f };
+
+    // The x and y inputs are a pixel offset from the top-left of the screen. Convert that to a world space offset.
+    const bx::Vec3 mouseOffsetWorldSpace{ x / (float)zoomScalePixPerUnit, y / (float)zoomScalePixPerUnit, 0.0f };
+
+    const bx::Vec3 screenToWorldLocation = bx::add(screenTopLeftWorldLocation, mouseOffsetWorldSpace);
+    return screenToWorldLocation;
 }

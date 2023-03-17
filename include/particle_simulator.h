@@ -3,6 +3,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "sasi.h"
+
 #include "particle.h"
 #include "particle_registry.h"
 
@@ -35,6 +37,10 @@ namespace sasi
 
         const Particle& getParticle(int index) const;
         const Particle& getParticle(int x, int y) const;
+
+        // Creates a particle at the world location given. If the world location corresponds to an
+        // a cell that is outside the bounds of a simulation the particle will not be created.
+        void makeParticleAtWorldLocation(ParticleType type, const bx::Vec3& worldLocation);
 
         // Moves the particle at (fromX, fromY) to (toX, toY) without changing
         // any properties. Original position is filled based on particle passed
