@@ -64,6 +64,9 @@ namespace sasi
         int m_backbufferWidth;
         int m_backbufferHeight;
 
+        bool m_isContinuousDraw;
+        bx::Vec3 m_previousDrawLocation;
+        
     public:
         World(int width, int height, uint64_t startTimeM, const InputState* inputState);
         ~World();

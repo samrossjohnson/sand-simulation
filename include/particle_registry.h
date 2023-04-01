@@ -8,7 +8,7 @@ namespace sasi
 {
     class ParticleSimulator;
 
-    typedef void (*TickFunction)(ParticleSimulator* simulator, Particle& particle, int x, int y);
+    typedef Coord (*TickFunction)(ParticleSimulator* simulator, Particle& particle, const Coord& coord, float deltaTime);
     typedef Particle (*MakeFunction)(const ParticleSimulator* simulator);
 
     class ParticleRegistry

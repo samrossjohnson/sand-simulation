@@ -7,4 +7,5 @@
 namespace sasi
 {
     const static float k_pixelsPerUnit = 8.0f;
+    const static float k_gravity = 1.4f;
 }

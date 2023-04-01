@@ -17,16 +17,18 @@
 
 bgfx::VertexLayout sasi::PosUvVertex::ms_layout;
 
-static const int k_targetFps = 30;
+static const int k_targetFps = 60;
 static const double k_targetFrameTime = 1.0 / k_targetFps;
 
 sasi::World::World(int width, int height, uint64_t startTimeMs, const InputState* inputState)
-    : m_simulator({ 160, 160 })
-    , m_camera(new Camera{ 0.0f, 100.0f })
-    , m_inputState(inputState)
-    , m_startTimeMs(startTimeMs)
-    , m_previousTickTimeSecs(0.0)
-    , m_fixedTimeAccumulationSecs(0.0)
+    : m_simulator{ 160, 160 }
+    , m_camera{ new Camera{ 0.0f, 100.0f } }
+    , m_inputState{ inputState }
+    , m_startTimeMs{ startTimeMs }
+    , m_previousTickTimeSecs{ 0.0 }
+    , m_fixedTimeAccumulationSecs{ 0.0 }
+    , m_isContinuousDraw{ false }
+    , m_previousDrawLocation{ 0.0f, 0.0f, 0.0f }
 {
     PosUvVertex::init();
     m_vbh = bgfx::createVertexBuffer(
@@ -121,12 +123,28 @@ void sasi::World::tick(int frame, uint64_t elapsedTimeMs)
         m_camera->translate(bx::mul(bx::Vec3{ 0.0f, -1.0f, 0.0f }, cameraSpeed * deltaTimeSecs ));
     }
 
-    if (m_inputState->isMouseButtonDown(1))
+    if (m_inputState->isMouseButtonDownThisFrame(1))
     {
         int x, y;
         m_inputState->getMouseLocation(x, y);
         const bx::Vec3 mouseWorldLocation = m_camera->screenToWorldLocation(m_backbufferWidth, m_backbufferHeight, x, y);
         m_simulator.makeParticleAtWorldLocation(ParticleType::Sand, mouseWorldLocation);
+
+        m_previousDrawLocation = mouseWorldLocation;
+        m_isContinuousDraw = true;
+    }
+    else if (m_inputState->isMouseButtonDown(1))
+    {
+        int x, y;
+        m_inputState->getMouseLocation(x, y);
+        const bx::Vec3 mouseWorldLocation = m_camera->screenToWorldLocation(m_backbufferWidth, m_backbufferHeight, x, y);
+
+        m_simulator.makeParticlesAlongLine(ParticleType::Sand, m_previousDrawLocation, mouseWorldLocation);
+        m_previousDrawLocation = mouseWorldLocation;
+    }
+    if (m_inputState->isMouseButtonUpThisFrame(1))
+    {
+        m_isContinuousDraw = false;
     }
 
     // Run fixed update simulation.
